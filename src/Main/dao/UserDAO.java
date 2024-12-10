@@ -1,8 +1,5 @@
 package Main.dao;
 
-
-
-
 import Main.Models.User;
 import Main.utils.DBConnection;
 
@@ -11,23 +8,52 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserDAO {
-    private Connection connection;
+    private static Connection connection;
 
     public UserDAO() {
         connection = DBConnection.getConnection();
     }
 
     // Create a new user
-    public void createUser(User user) {
-        String sql = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
+    public static void createUser(User user) {
+        String sql = "INSERT INTO users (username, password, email, phoneNumber) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, user.getUsername());
             stmt.setString(2, user.getPassword());
             stmt.setString(3, user.getEmail());
-            stmt.executeUpdate();
+            stmt.setString(4, user.getPhoneNumber());
+
+            int rowsInserted = stmt.executeUpdate();
+            if (rowsInserted > 0) {
+                System.out.println("User registered successfully!");
+            } else {
+                System.out.println("Failed to insert user into the database.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace(); // Detailed error message
+        }
+    }
+
+    // Retrieve a user by username (fix)
+    public static User getUserByUsername(String username) {
+        String sql = "SELECT * FROM users WHERE username = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, username);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new User(
+                            rs.getInt("id"),
+                            rs.getString("username"),
+                            rs.getString("password"),
+                            rs.getString("email"),
+                            rs.getString("phoneNumber")
+                    );
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return null;  // Return null if user is not found
     }
 
     // Retrieve all users

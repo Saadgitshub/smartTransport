@@ -1,84 +1,98 @@
 package ui;
 
+import Main.dao.BookingDAO;
+import Main.dao.UserDAO;
+import Main.Models.User;
+import Main.dao.VehicleDAO;
+
 import javax.swing.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class LoginForm {
-    private JFrame frame;
+public class LoginForm extends JFrame {
+
     private JTextField usernameField;
     private JPasswordField passwordField;
-    private JButton loginButton;
+    private UserDAO userDAO;
 
     public LoginForm() {
-        frame = new JFrame("Login - Vehicle Booking System");
-        frame.setSize(300, 200);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLocationRelativeTo(null); // Center the window
-        initialize();
-    }
+        // Initialize DAO here
+        this.userDAO = new UserDAO();
 
-    private void initialize() {
+        setTitle("Login Form");
+        setSize(300, 200);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
         JPanel panel = new JPanel();
-        frame.getContentPane().add(panel);
-        panel.setLayout(null); // Absolute layout for custom positioning
+        setContentPane(panel);
+        panel.setLayout(null);
 
-        // Username label and text field
-        JLabel lblUsername = new JLabel("Username:");
-        lblUsername.setBounds(20, 20, 80, 25);
-        panel.add(lblUsername);
+        // Username field
+        JLabel usernameLabel = new JLabel("Username:");
+        usernameLabel.setBounds(20, 30, 80, 25);
+        panel.add(usernameLabel);
 
         usernameField = new JTextField();
-        usernameField.setBounds(100, 20, 165, 25);
+        usernameField.setBounds(100, 30, 160, 25);
         panel.add(usernameField);
 
-        // Password label and text field
-        JLabel lblPassword = new JLabel("Password:");
-        lblPassword.setBounds(20, 50, 80, 25);
-        panel.add(lblPassword);
+        // Password field
+        JLabel passwordLabel = new JLabel("Password:");
+        passwordLabel.setBounds(20, 70, 80, 25);
+        panel.add(passwordLabel);
 
         passwordField = new JPasswordField();
-        passwordField.setBounds(100, 50, 165, 25);
+        passwordField.setBounds(100, 70, 160, 25);
         panel.add(passwordField);
 
         // Login button
-        loginButton = new JButton("Login");
-        loginButton.setBounds(100, 80, 80, 25);
+        JButton loginButton = new JButton("Login");
+        loginButton.setBounds(100, 110, 100, 30);
         panel.add(loginButton);
 
-        // Action listener for the login button
-        loginButton.addActionListener(e -> authenticateUser());
+        // Back button
+        JButton backButton = new JButton("Back");
+        backButton.setBounds(100, 150, 100, 30);
+        panel.add(backButton);
+
+        // Action listener for back button
+        backButton.addActionListener(e -> openWelcomeForm());
+
+        // Action listener for login button
+        loginButton.addActionListener(e -> loginUser());
     }
 
-    private void authenticateUser() {
-        // Simple username/password check
+    private void loginUser() {
         String username = usernameField.getText();
-        char[] password = passwordField.getPassword();
+        String password = new String(passwordField.getPassword());
 
-        // Here, you should add a real authentication check
-        if ("Throw".equals(username) && "123456".equals(new String(password))) {
-            JOptionPane.showMessageDialog(frame, "Login successful!");
-            // After successful login, show the Main Menu
-            showMainMenu();
+        // Authenticate user using DAO
+        User user = userDAO.getUserByUsername(username);
+
+        if (user != null && user.getPassword().equals(password)) {
+            // Successful login, navigate to the main menu
+            JOptionPane.showMessageDialog(this, "Login successful!");
+            openMainMenu(user);  // Pass the authenticated user to the MainMenu
+            this.dispose();
         } else {
-            JOptionPane.showMessageDialog(frame, "Invalid username or password.");
+            // Failed login attempt
+            JOptionPane.showMessageDialog(this, "Invalid username or password.");
         }
     }
 
-    public void showWindow() {
-        frame.setVisible(true);
+    private void openMainMenu(User user) {
+        // Passing the logged-in user to MainMenu
+        MainMenu mainMenu = new MainMenu(user, new VehicleDAO(), new BookingDAO());
+        mainMenu.showWindow();  // Show the main menu
     }
 
-    // This method would be used to navigate to the main menu
-    private void showMainMenu() {
-        frame.setVisible(false); // Close the login form
-        MainMenu mainMenu = new MainMenu(); // Create the main menu
-        mainMenu.showWindow(); // Show the main menu
+    private void openWelcomeForm() {
+        new WelcomeForm().setVisible(true);  // Open WelcomeForm
+        this.dispose();  // Close LoginForm
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            LoginForm loginForm = new LoginForm();
-            loginForm.showWindow();
-        });
+        SwingUtilities.invokeLater(() -> new LoginForm().setVisible(true));
     }
 }

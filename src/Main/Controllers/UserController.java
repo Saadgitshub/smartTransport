@@ -6,14 +6,14 @@ import Main.Models.User;
 import java.util.List;
 
 public class UserController {
-    private UserDAO userDAO;
+    private final UserDAO userDAO;
 
     public UserController() {
         userDAO = new UserDAO();
     }
 
     public void createUser(User user) {
-        userDAO.createUser(user);
+        UserDAO.createUser(user);
     }
 
     public List<User> getAllUsers() {

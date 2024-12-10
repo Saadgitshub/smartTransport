@@ -4,21 +4,25 @@ package Main.Controllers;
 import Main.dao.BookingDAO;
 import Main.Models.Booking;
 
+import java.sql.Connection;
 import java.util.List;
+
 
 public class BookingController {
     private BookingDAO bookingDAO;
 
     public BookingController() {
+        Connection connection = null;
         bookingDAO = new BookingDAO();
     }
 
-    public void createBooking(Booking booking) {
-        bookingDAO.createBooking(booking);
+    public boolean addBooking(Booking booking) {
+        bookingDAO.addBooking(booking);
+        return false;
     }
 
-    public List<Booking> getAllBookings() {
-        return bookingDAO.getAllBookings();
+    public List<Booking> getBookingsByUserId(int userId) {
+        return bookingDAO.getBookingsByUserId(userId);
     }
 
     public Booking getBookingById(int id) {

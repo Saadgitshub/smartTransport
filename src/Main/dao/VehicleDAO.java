@@ -17,36 +17,46 @@ public class VehicleDAO {
     }
 
     // Create a new vehicle
-    public void addVehicle(Vehicle vehicle) {
-        String sql = "INSERT INTO vehicles (model, license_plate, year) VALUES (?, ?, ?)";
+    public boolean addVehicle(Vehicle vehicle) {
+        String sql = "INSERT INTO vehicles (vehicleType, vehicleModel, licensePlate, isAvailable) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, vehicle.getModel());
-            stmt.setString(2, vehicle.getLicensePlate());
-            stmt.setInt(3, vehicle.getYear());
-            stmt.executeUpdate();
+            stmt.setString(1, vehicle.getVehicleType());
+            stmt.setString(2, vehicle.getVehicleModel());
+            stmt.setString(3, vehicle.getLicensePlate());
+            stmt.setBoolean(4, vehicle.isAvailable());
+
+            int rowsInserted = stmt.executeUpdate();
+            return rowsInserted > 0;
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
     }
 
     // Retrieve all vehicles
     public List<Vehicle> getAllVehicles() {
-        List<Vehicle> vehicles = new ArrayList<>();
-        String sql = "SELECT * FROM vehicles";
-        try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
+        List<Vehicle> vehicleList = new ArrayList<>();
+        String sql = "SELECT * FROM vehicles"; // Adjust query as needed
+
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
             while (rs.next()) {
-                Vehicle vehicle = new Vehicle(
-                        rs.getInt("id"),
-                        rs.getString("model"),
-                        rs.getString("license_plate"),
-                        rs.getInt("year")
-                );
-                vehicles.add(vehicle);
+                int id = rs.getInt("id");
+                String vehicleType = rs.getString("vehicleType");
+                String vehicleModel = rs.getString("vehicleModel");
+                String licensePlate = rs.getString("licensePlate");
+                boolean isAvailable = rs.getBoolean("isAvailable");
+
+                // Add the vehicle to the list
+                Vehicle vehicle = new Vehicle(id, vehicleType, vehicleModel, licensePlate, isAvailable);
+                vehicleList.add(vehicle);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return vehicles;
+
+        return vehicleList;
     }
 
     // Retrieve vehicle by ID
